@@ -7,13 +7,18 @@ import os
 from collections import deque
 import datetime
 
+"""
+CREDENTIALS TO COPY AND PASTE TO TERMINAL
+-----------------------------------------
+set MT5_ACCOUNT="160506438"
+set MT5_PASSWORD="Dbk1991200104$"
+set MT5_SERVER="ForexTimeFXTM-Demo01"
+-----------------------------------------
+"""
+
+
 # Initialize colorama for colored text in the console
 init()
-
-# Configure logging to track issues and operations
-logging.basicConfig(level=logging.INFO, filename='trading_bot.log', filemode='a',
-                    format='%(asctime)s - %(levelname)s - %(message)s')
-
 
 # Helper function to print colorful messages
 def print_message(msg, color=Fore.WHITE):
@@ -34,21 +39,22 @@ def print_price_info(current_price, upper_band, lower_band, std_50, std_10):
     print_separator()
 
 
-# Initialize and log in to MetaTrader5 using environment variables for security
+# Initialize and log in to MetaTrader5
 if not mt5.initialize():
     print("Failed to initialize MT5")
     quit()
 
-account = 160506438  # Ensure you set these environment variables securely
+# Hardcoded credentials
+account = 160506438  # Replace with your account number
 password = "Dbk1991200104$"
-server = "ForexTimeFXTM-Demo01"
+server = "ForexTimeFXTM-Demo01"  # Replace with your broker's server
 
 if not mt5.login(account, password, server):
-    logging.error(f"Login failed: {mt5.last_error()}")
+    print(f"Login failed: {mt5.last_error()}")
     mt5.shutdown()
     quit()
 else:
-    logging.info(f"Logged in to account {account}")
+    print(f"Logged in to account {account}")
 
 
 # Function to get the current price from MetaTrader5
@@ -84,7 +90,7 @@ def submit_order(symbol, volume, is_buy):
         symbol_info = mt5.symbol_info(symbol)
         point = symbol_info.point
 
-        stop_loss_diff = 0.150  # Fixed stop loss in points
+        stop_loss_diff = 0.200  # Fixed stop loss in points
         take_profit_diff = 0.015  # Fixed take profit in points
 
         sl = price - stop_loss_diff * point if is_buy else price + stop_loss_diff * point
@@ -102,7 +108,7 @@ def submit_order(symbol, volume, is_buy):
             "magic": 234000,
             "comment": "Bollinger Bands trade",
             "type_time": mt5.ORDER_TIME_GTC,
-            "type_filling": mt5.ORDER_FILLING_IOC,  # Use IOC for better execution
+            "type_filling": mt5.ORDER_FILLING_FOK,  # Use IOC for better execution
         }
 
         result = mt5.order_send(request)
@@ -266,5 +272,5 @@ def trade_bollinger_live(symbol, window, num_std_dev, volume):
 
 
 # Example usage:
-trade_bollinger_live("EURUSD", 10, 2, 0.1)
+trade_bollinger_live("USDJPY", 10, 2, 0.5)
 
